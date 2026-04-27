@@ -14,7 +14,7 @@ enum TokenType{
     PLUS, MINUS, MULTIPLY, DIVIDE, SEMICOLON, EQUALS,
 
     //Others
-    VAR, ENDFILE
+    VAR, NUMBER, ENDFILE
 };
 
 class Token{
@@ -89,7 +89,6 @@ vector<Token> Tokenizer(string filename){
             case '+':
                 Cleaner(tempToken, tokens, line);
                 tokens.push_back(Token(TokenType::PLUS, "+", line));
-                tempToken = "";
                 break;
             
             case '-':
@@ -142,6 +141,7 @@ vector<Token> Tokenizer(string filename){
 
         //checks to see if current token is empty to make sure no accidental bloat at end of file
         Cleaner(tempToken, tokens, line);
+        tokens.push_back(Token(TokenType::ENDFILE, "", line));
 
         textfile.close();
     }
@@ -160,13 +160,28 @@ vector<Token> Tokenizer(string filename){
 ///////////////////////////////////////////////////////////////////////////////
 void Cleaner(string& tempToken, vector<Token>& tokens, int line){
     //checks if token is empty if not pushes onto stack
+    bool hasChar = false;
+
     if(!tempToken.empty()){
-             tokens.push_back(Token(TokenType::VAR, tempToken, line));
+            
+            for(int i = 0; i < tempToken.length(); i++){
+                if(!isdigit(tempToken[i]) && tempToken[i] != '.'){
+                    hasChar = true;
+                }
+            }
+
+            if(hasChar == true){
+                tokens.push_back(Token(TokenType::VAR, tempToken, line));
+                cout << "Is variable"<< endl;
+            }
+            else{
+                tokens.push_back(Token(TokenType::NUMBER, tempToken, line));
+                cout << "Is Number"<< endl;
+            }
         }
     
     //starts new token by making it equal to null
     tempToken = "";
-
     return;
 }
 

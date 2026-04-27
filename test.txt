@@ -1,6 +1,5 @@
-Test string
-poggers
-end
-this;should;be;5;lines;
-x+2=5
-;
+666666
+ABC
+12.3
+ABC555
+555
