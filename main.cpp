@@ -7,16 +7,40 @@
 //namespace
 using namespace std;
 
+//enum
+enum TokenType{
+    //single charcters
+    LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
+    PLUS, MINUS, MULTIPLY, DIVIDE, SEMICOLON, EQUALS,
+
+    //Others
+    VAR, ENDFILE
+};
+
+class Token{
+    public:
+        TokenType type;
+        string value;
+        int line;
+    
+    Token(TokenType t, string v, int l){
+        type = t;
+        value = v;
+        line = l;
+    }
+        
+};
+
 //function declerations
-vector<string> Tokenizer(string filename);
-void Cleaner(string& tempToken, vector<string>& tokens);
+vector<Token> Tokenizer(string filename);
+void Cleaner(string& tempToken, vector<Token>& tokens, int line);
 
 ///////////////////////////////////////////////////////////////////////////////
 // MAIN
 ///////////////////////////////////////////////////////////////////////////////
 int main(){
     //variables
-    vector<string> tokens;
+    vector<Token> tokens;
     string filename = "test.txt";
 
     tokens = Tokenizer(filename);
@@ -28,11 +52,12 @@ int main(){
 ///////////////////////////////////////////////////////////////////////////////
 // Tokenizer: Tokenizes input file
 ///////////////////////////////////////////////////////////////////////////////
-vector<string> Tokenizer(string filename){
+vector<Token> Tokenizer(string filename){
     //variables
+    int line = 1;
     ifstream textfile;
     string tempToken;
-    vector<string> tokens;
+    vector<Token> tokens;
     char tempChar;
 
     //gets file
@@ -46,63 +71,67 @@ vector<string> Tokenizer(string filename){
             //switch case to every special character that start would mean is a new token
             switch(tempChar){
             case ' ':
+                Cleaner(tempToken, tokens, line);
+                break;
+
             case '\n':
                 //in every switch statement makes sure blank tokens not added to vector
-                Cleaner(tempToken, tokens);
+                Cleaner(tempToken, tokens, line);
+                line++;
                 break;
             
             case ';':
-                Cleaner(tempToken, tokens);
+                Cleaner(tempToken, tokens, line);
                 //pushing back symbol as token as its what caused this case, used in all future statements
-                tokens.push_back(";");
+                tokens.push_back(Token(TokenType::SEMICOLON, ";", line));
                 break;
 
             case '+':
-                Cleaner(tempToken, tokens);
-                tokens.push_back("+");
+                Cleaner(tempToken, tokens, line);
+                tokens.push_back(Token(TokenType::PLUS, "+", line));
                 tempToken = "";
                 break;
             
             case '-':
-                Cleaner(tempToken, tokens);
-                tokens.push_back("-");
+                Cleaner(tempToken, tokens, line);
+                tokens.push_back(Token(TokenType::MINUS, "-", line));
                 break;
 
             case '*':
-                Cleaner(tempToken, tokens);
-                tokens.push_back("*");
+                Cleaner(tempToken, tokens, line);
+                tokens.push_back(Token(TokenType::MULTIPLY, "*", line));
                 break;
 
             //come back to this later for double
             case '/':
-                Cleaner(tempToken, tokens);
-                tokens.push_back("/");
+                Cleaner(tempToken, tokens, line);
+                tokens.push_back(Token(TokenType::DIVIDE, "/", line));
                 break;
             
             //come back to this later for double
             case '=':
-                Cleaner(tempToken, tokens);
-                tokens.push_back("=");
+                Cleaner(tempToken, tokens, line);
+                tokens.push_back(Token(TokenType::EQUALS, "=", line));
                 break;
 
             case '(':
-                Cleaner(tempToken, tokens);
-                tokens.push_back("(");
+                Cleaner(tempToken, tokens, line);
+                tokens.push_back(Token(TokenType::LEFT_PAREN, "(", line));
                 break;
             
             case ')':
-                Cleaner(tempToken, tokens);
-                tokens.push_back(")");
+                Cleaner(tempToken, tokens, line);
+                tokens.push_back(Token(TokenType::RIGHT_PAREN, ")", line));
                 break;
             
             case '{':
-                Cleaner(tempToken, tokens);
-                tokens.push_back("{");
+                Cleaner(tempToken, tokens, line);
+                tokens.push_back(Token(TokenType::LEFT_BRACE, "{", line));
                 break;
             
             case '}':
-                Cleaner(tempToken, tokens);
-                tokens.push_back("}");
+                Cleaner(tempToken, tokens, line);
+                tokens.push_back(Token(TokenType::RIGHT_BRACE, "}", line));
                 break;
             
             //if no special characters means character is part of current token
@@ -112,7 +141,7 @@ vector<string> Tokenizer(string filename){
         }
 
         //checks to see if current token is empty to make sure no accidental bloat at end of file
-        Cleaner(tempToken, tokens);
+        Cleaner(tempToken, tokens, line);
 
         textfile.close();
     }
@@ -121,6 +150,7 @@ vector<string> Tokenizer(string filename){
         cout << "Invalid File";
     }
 
+    cout << line << endl;
     return tokens;
     
 }
@@ -128,10 +158,10 @@ vector<string> Tokenizer(string filename){
 ///////////////////////////////////////////////////////////////////////////////
 // Cleaner: helps empty tokens before pushing into vector
 ///////////////////////////////////////////////////////////////////////////////
-void Cleaner(string& tempToken, vector<string>& tokens){
+void Cleaner(string& tempToken, vector<Token>& tokens, int line){
     //checks if token is empty if not pushes onto stack
     if(!tempToken.empty()){
-             tokens.push_back(tempToken);
+             tokens.push_back(Token(TokenType::VAR, tempToken, line));
         }
     
     //starts new token by making it equal to null
@@ -139,3 +169,4 @@ void Cleaner(string& tempToken, vector<string>& tokens){
 
     return;
 }
+
