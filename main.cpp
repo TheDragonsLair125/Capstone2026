@@ -2,18 +2,40 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 
 using namespace std;
 
 int main(){
-    string line;
+    //variables
+    string tempToken;
+    char tempChar;
+    vector<string> tokens;
     ifstream textfile;
+
+    //gets file
     textfile.open ("test.txt");
     
+    //file reading
     if (textfile.is_open()){
-        while( getline(textfile,line)){
-            cout << line << '\n';
+        while( textfile.get(tempChar)){
+            
+            switch(tempChar){
+            case ' ':
+                cout << tempToken;
+                tempToken = "";
+
+            case '\n':
+                cout << tempToken;
+                tempToken = "";
+            
+            default:
+            tempToken += tempChar;
+            }
         }
+
+        cout << tempToken;
+
         textfile.close();
     }
 
