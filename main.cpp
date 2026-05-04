@@ -4,36 +4,16 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <token.h>
 //namespace
 using namespace std;
 
-//enum
-enum TokenType{
-    //single charcters
-    LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
-    PLUS, MINUS, MULTIPLY, DIVIDE, SEMICOLON, EQUALS,
-
-    //Others
-    VAR, NUMBER, ENDFILE
-};
-
-class Token{
-    public:
-        TokenType type;
-        string value;
-        int line;
-    
-    Token(TokenType t, string v, int l){
-        type = t;
-        value = v;
-        line = l;
-    }
-        
-};
 
 //function declerations
 vector<Token> Tokenizer(string filename);
 void Cleaner(string& tempToken, vector<Token>& tokens, int line);
+void Parser(vector<Token> tokens);
+//float Math(vector<Token>& tokens, int& i, int j);
 
 ///////////////////////////////////////////////////////////////////////////////
 // MAIN
@@ -45,7 +25,10 @@ int main(){
 
     tokens = Tokenizer(filename);
     
-    cout << tokens.size();
+    cout << tokens.size() << endl;
+    
+    Parser(tokens);
+
     return 0;
 }
 
@@ -184,4 +167,3 @@ void Cleaner(string& tempToken, vector<Token>& tokens, int line){
     tempToken = "";
     return;
 }
-
