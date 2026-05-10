@@ -4,7 +4,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include <token.h>
+#include "token.h"
 //namespace
 using namespace std;
 
@@ -27,7 +27,7 @@ int main(){
     
     cout << tokens.size() << endl;
     
-    Parser(tokens);
+    //Parser(tokens);
 
     return 0;
 }
