@@ -88,6 +88,15 @@ class Parser {
     bool isAtEnd(){
         return peek().type == ENDFILE;
     }
+
+public:
+     Parser(vector<Token> tokens)
+    :tokens(tokens){}
+
+    Expr* parse(){
+        expression();
+    }
+
 };
 
 #endif
