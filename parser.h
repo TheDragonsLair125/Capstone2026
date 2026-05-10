@@ -13,11 +13,6 @@ class Parser {
      vector<Token> tokens;
      int current = 0;
 
-     public:
-     Parser(vector<Token> tokens)
-    :tokens(tokens){}
-
-    private:
     Expr* expression(){
         return as();
     }
