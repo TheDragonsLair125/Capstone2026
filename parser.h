@@ -15,6 +15,39 @@ class Parser {
      vector<Token> tokens;
      int current = 0;
 
+    Stmt* declaration(){
+        try{
+            if(match({INT})){
+                return varDecleration();
+            }
+
+            return statement();
+        }
+        catch(const exception& e){
+            return nullptr;
+        }
+    }
+
+    Stmt* varDecleration(){
+        if(peek().type != VAR){
+            throw runtime_error("Expected name after deceleariton");
+        }
+
+        Token name = advance();
+        Expr* initial = nullptr;
+
+        if(match({EQUALS})){
+        initial = expression();
+        }
+            
+        if(!match({SEMICOLON})){
+                    throw runtime_error("Expected ';' after expression.");
+        }
+
+        return new VarStmt(name, initial);
+
+    }
+
     Stmt* statement(){
         if(match({PRINT})){
             return printStatement();
@@ -85,6 +118,9 @@ class Parser {
             //cout << tokens[current-1].value;
             return new Value(previous());
         }
+        else if(match({VAR})){
+            return new Var(previous());
+        }
         
         throw runtime_error("Expected Value.");
     }
@@ -143,7 +179,7 @@ public:
 
         try{
             while(!isAtEnd()){
-                statements.push_back(statement());
+                statements.push_back(declaration());
             }
         }
         catch(const exception& e){

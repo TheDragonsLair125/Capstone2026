@@ -22,8 +22,11 @@ void Cleaner(string& tempToken, vector<Token>& tokens, int line);
 int main(){
     //variables
     vector<Token> tokens;
-    string filename = "test.txt";
+    string filename;
     Interpeter interpeter;
+
+    cout << "Please input file name. \n";
+    cin >> filename;
 
     tokens = Tokenizer(filename);
 
@@ -159,6 +162,7 @@ vector<Token> Tokenizer(string filename){
     //file failed to load
     else{ 
         cout << "Invalid File";
+        exit(EXIT_FAILURE);
     }
 
     //cout << line << endl;
@@ -184,12 +188,10 @@ void Cleaner(string& tempToken, vector<Token>& tokens, int line){
             if(hasChar == true){
                 if(tempToken == "int"){
                     tokens.push_back(Token(TokenType::INT, tempToken, line));
-                    cout << "Is int"<< endl;
                 }
 
                 else if(tempToken == "nullptr"){
                     tokens.push_back(Token(TokenType::NIL, tempToken, line));
-                    cout << "Is null"<< endl;
                 }
                 
                 else if(tempToken == "cout"){
@@ -203,7 +205,6 @@ void Cleaner(string& tempToken, vector<Token>& tokens, int line){
             }
             else{
                 tokens.push_back(Token(TokenType::NUMBER, tempToken, line));
-                cout << "Is Number"<< endl;
             }
         }
     

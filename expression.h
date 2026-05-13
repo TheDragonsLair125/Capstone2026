@@ -2,15 +2,17 @@
 #ifndef EXPR_H_INCLUDED
 #define EXPR_H_INCLUDED
 
-#include "token.h"
 #include <string>
-#include "runtime.h"
 #include <fstream>
+#include "token.h"
+#include "runtime.h"
+#include "memorymap.h"
 
 using namespace std;
 
 class Math;
 class Value;
+class Var;
 
 class ExprVisitor {
 public:
@@ -18,6 +20,7 @@ public:
 
     virtual RuntimeVal visitMath(Math* expr) = 0;
     virtual RuntimeVal visitValue(Value* expr) = 0;
+    virtual RuntimeVal visitVar(Var* expr) = 0;
 };
 
 class Expr{
@@ -55,8 +58,22 @@ public:
 
 };
 
+class Var : public Expr{
+public:
+    Token var;
+    
+    Var(Token var)
+    :var(var){}
+
+    RuntimeVal accept(ExprVisitor* visitor) override {
+        return visitor->visitVar(this);
+    }
+
+};
+
 class ExprStmt;
 class PrintStmt;
+class VarStmt;
 
 class StmtVisitor{
 public:
@@ -64,6 +81,7 @@ public:
 
     virtual void visitExprStmt(ExprStmt* stmt) = 0;
     virtual void visitPrintStmt(PrintStmt* stmt) = 0;
+    virtual void visitVarStmt(VarStmt* stmt) = 0;
 };
 
 class Stmt{
@@ -97,6 +115,19 @@ public:
     }
 };
 
+class VarStmt : public Stmt{
+public:
+    Token name;
+    Expr* expr;
+
+    VarStmt(Token name, Expr* expr)
+    : name(name), expr(expr){}
+
+    void accept(StmtVisitor* visitor) override {
+        return visitor->visitVarStmt(this);
+    }
+};
+
 class Interpeter : public ExprVisitor, public StmtVisitor{
 private:
     RuntimeVal evaluate(Expr* expr){
@@ -107,7 +138,9 @@ private:
         return stmt->accept(this);
     }
 
-    ofstream outputFile;
+    std::ofstream outputFile;
+    MemoryMap memory;
+
 public:
     RuntimeVal visitValue(Value* expr) override{
         RuntimeVal tempVal;
@@ -145,6 +178,10 @@ public:
         }
 
     }
+    
+    RuntimeVal visitVar(Var* expr) override{
+        return memory.get(expr->var);
+    }
 
     void visitExprStmt(ExprStmt* stmt) override{
         RuntimeVal value = evaluate(stmt->expr);
@@ -159,6 +196,15 @@ public:
         outputFile << toString(value) << endl;
 
         return;
+    }
+
+    void visitVarStmt(VarStmt* stmt) override{
+        RuntimeVal value;
+        if(stmt->expr != nullptr){
+            value = evaluate(stmt->expr);
+        }
+
+        memory.define(stmt->name.value, value);
     }
 
     void interpret(Stmt* stmt){

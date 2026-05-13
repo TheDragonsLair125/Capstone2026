@@ -1,5 +1,6 @@
 //runtime.h
-
+#ifndef RUNTIME_H_INCLUDED
+#define RUNTIME_H_INCLUDED
 #include<string>
 
 enum ValueType{
@@ -21,3 +22,5 @@ public:
         type = NULL_VAL;
     }
 };
+
+#endif

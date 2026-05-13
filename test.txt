@@ -1,4 +1,6 @@
-cout << 1*1;
-5 + 58;
-cout << 420 * 69;
-6 - 7;
+int a = 10 + 5 * 2;
+int b = a - 8;
+cout << a;
+cout << b;
+cout << a + b * 2;
+a + 1;
