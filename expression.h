@@ -96,7 +96,7 @@ public:
     void interpret(Expr* expr){
         try{
             RuntimeVal value = evaluate(expr);
-            cout << toString(value);
+            cout << toString(value) << endl;
         }
         catch(const exception& e){
             cout << "error";

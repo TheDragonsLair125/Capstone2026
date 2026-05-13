@@ -29,13 +29,12 @@ int main(){
 
     Parser parser(tokens);
 
-    Expr* expression = parser.parse();
+    vector<Expr*> expressions = parser.parse();
 
-    parser.printExpr(expression);
-
-    cout << "Im gonna interpet all over the place uhhhh\n";
-
-    interpeter.interpret(expression);
+    //parser.printExpr(expression);
+    for(Expr* expr : expressions){
+        interpeter.interpret(expr);
+    }
     
     //cout << tokens.size() << endl;
     

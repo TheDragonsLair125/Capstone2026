@@ -104,14 +104,24 @@ public:
      Parser(vector<Token> tokens)
     :tokens(tokens){}
 
-    Expr* parse(){
+    vector<Expr*> parse(){
+
+        vector<Expr*> expressions;
+
         try{
-            return expression();
+            while(!isAtEnd()){
+                expressions.push_back(expression());
+            
+                if(!match({SEMICOLON})){
+                    throw runtime_error("Expected ';' after exoression.");
+                }
+            }
         }
         catch(const exception& e){
             cout << e.what() << endl;
-            return nullptr;
         }       
+
+        return expressions;
     }
 
     void printExpr(Expr* expr) {
