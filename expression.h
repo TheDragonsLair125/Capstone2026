@@ -13,6 +13,7 @@ using namespace std;
 class Math;
 class Value;
 class Var;
+class Assign;
 
 class ExprVisitor {
 public:
@@ -21,6 +22,7 @@ public:
     virtual RuntimeVal visitMath(Math* expr) = 0;
     virtual RuntimeVal visitValue(Value* expr) = 0;
     virtual RuntimeVal visitVar(Var* expr) = 0;
+    virtual RuntimeVal visitAssign(Assign* expr) = 0;
 };
 
 class Expr{
@@ -69,6 +71,19 @@ public:
         return visitor->visitVar(this);
     }
 
+};
+
+class Assign : public Expr{
+public:
+    Token name;
+    Expr* value;
+
+    Assign(Token name, Expr* value)
+    : name(name), value(value){}
+
+    RuntimeVal accept(ExprVisitor* visitor){
+        return visitor->visitAssign(this);
+    }
 };
 
 class ExprStmt;
@@ -181,6 +196,14 @@ public:
     
     RuntimeVal visitVar(Var* expr) override{
         return memory.get(expr->var);
+    }
+
+    RuntimeVal visitAssign(Assign* expr) override{
+        RuntimeVal value = evaluate(expr->value);
+
+        memory.assign(expr->name, value);
+
+        return value;
     }
 
     void visitExprStmt(ExprStmt* stmt) override{

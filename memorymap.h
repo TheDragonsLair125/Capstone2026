@@ -26,6 +26,16 @@ public:
         }
     }
 
+    void assign(Token name, RuntimeVal value){
+
+        if(values.find(name.value) != values.end()){
+            values[name.value] = value;
+            return;
+        }
+
+        throw std::runtime_error("Undefined variable");
+    }
+
 };
 
 #endif

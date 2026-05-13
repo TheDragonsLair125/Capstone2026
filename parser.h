@@ -82,7 +82,25 @@ class Parser {
     }
 
     Expr* expression(){
-        return as();
+        return assignment();
+    }
+
+    Expr* assignment(){
+        Expr* expr = as();
+        
+        if(match({EQUALS})){
+
+            Expr* value = assignment();
+
+            if(auto varExpr = dynamic_cast<Var*>(expr)){
+                Token name = varExpr->var;
+                return new Assign(name, value);
+            }
+
+            throw runtime_error("Invalid assignment target.");
+        }
+
+        return expr;
     }
 
     Expr* as(){
