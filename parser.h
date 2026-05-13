@@ -15,6 +15,21 @@ class Parser {
      vector<Token> tokens;
      int current = 0;
 
+    Stmt* statement(){
+
+        return expressionStatement();
+    }
+
+    Stmt* expressionStatement(){
+        Expr* expr = expression();
+
+        if(!match({SEMICOLON})){
+                    throw runtime_error("Expected ';' after exoression.");
+        }
+        
+        return new ExprStmt(expr);
+    }
+
     Expr* expression(){
         return as();
     }
@@ -104,24 +119,20 @@ public:
      Parser(vector<Token> tokens)
     :tokens(tokens){}
 
-    vector<Expr*> parse(){
+    vector<Stmt*> parse(){
 
-        vector<Expr*> expressions;
+        vector<Stmt*> statements;
 
         try{
             while(!isAtEnd()){
-                expressions.push_back(expression());
-            
-                if(!match({SEMICOLON})){
-                    throw runtime_error("Expected ';' after exoression.");
-                }
+                statements.push_back(statement());
             }
         }
         catch(const exception& e){
             cout << e.what() << endl;
         }       
 
-        return expressions;
+        return statements;
     }
 
     void printExpr(Expr* expr) {

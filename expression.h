@@ -54,7 +54,35 @@ public:
 
 };
 
-class Interpeter : public ExprVisitor{
+class ExprStmt;
+
+class StmtVisitor{
+public:
+    virtual ~StmtVisitor() = default;
+
+    virtual void visitExprStmt(ExprStmt* stmt) = 0;
+};
+
+class Stmt{
+public:
+    virtual ~Stmt() = default;
+
+    virtual void accept(StmtVisitor* visitor) = 0;
+};
+
+class ExprStmt : public Stmt{
+public:
+    Expr* expr;
+
+    ExprStmt(Expr* expr)
+    :expr(expr){}
+
+    void accept(StmtVisitor* visitor) override {
+        return visitor->visitExprStmt(this);
+    }
+};
+
+class Interpeter : public ExprVisitor, public StmtVisitor{
 public:
     RuntimeVal visitValue(Value* expr) override{
         RuntimeVal tempVal;
@@ -93,10 +121,16 @@ public:
 
     }
 
-    void interpret(Expr* expr){
+    void visitExprStmt(ExprStmt* stmt) override{
+        RuntimeVal value = evaluate(stmt->expr);
+        cout << toString(value) << endl;
+
+        return;
+    }
+
+    void interpret(Stmt* stmt){
         try{
-            RuntimeVal value = evaluate(expr);
-            cout << toString(value) << endl;
+            execute(stmt);
         }
         catch(const exception& e){
             cout << "error";
@@ -147,6 +181,10 @@ public:
     private:
     RuntimeVal evaluate(Expr* expr){
         return expr->accept(this);
+    }
+
+    void execute(Stmt* stmt){
+        return stmt->accept(this);
     }
 
 };

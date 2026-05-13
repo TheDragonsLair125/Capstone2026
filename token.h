@@ -11,7 +11,7 @@ enum TokenType{
     PLUS, MINUS, MULTIPLY, DIVIDE, SEMICOLON, EQUALS,
 
     //Others
-    VAR, NUMBER, ENDFILE
+    VAR, INT, NIL, NUMBER, ENDFILE
 };
 
 class Token{

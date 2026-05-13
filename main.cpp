@@ -29,11 +29,11 @@ int main(){
 
     Parser parser(tokens);
 
-    vector<Expr*> expressions = parser.parse();
+    vector<Stmt*> statements = parser.parse();
 
     //parser.printExpr(expression);
-    for(Expr* expr : expressions){
-        interpeter.interpret(expr);
+    for(Stmt* stmt : statements){
+        interpeter.interpret(stmt);
     }
     
     //cout << tokens.size() << endl;
@@ -140,11 +140,11 @@ vector<Token> Tokenizer(string filename){
         textfile.close();
     }
     //file failed to load
-    else{
+    else{ 
         cout << "Invalid File";
     }
 
-    cout << line << endl;
+    //cout << line << endl;
     return tokens;
     
 }
@@ -165,8 +165,20 @@ void Cleaner(string& tempToken, vector<Token>& tokens, int line){
             }
 
             if(hasChar == true){
-                tokens.push_back(Token(TokenType::VAR, tempToken, line));
-                cout << "Is variable"<< endl;
+                if(tempToken == "int"){
+                    tokens.push_back(Token(TokenType::INT, tempToken, line));
+                    cout << "Is int"<< endl;
+                }
+
+                else if(tempToken == "nullptr"){
+                    tokens.push_back(Token(TokenType::NIL, tempToken, line));
+                    cout << "Is null"<< endl;
+                }
+
+                else{
+                    tokens.push_back(Token(TokenType::VAR, tempToken, line));
+                }
+
             }
             else{
                 tokens.push_back(Token(TokenType::NUMBER, tempToken, line));
