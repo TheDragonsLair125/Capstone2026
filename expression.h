@@ -5,6 +5,7 @@
 #include "token.h"
 #include <string>
 #include "runtime.h"
+#include <fstream>
 
 using namespace std;
 
@@ -55,12 +56,14 @@ public:
 };
 
 class ExprStmt;
+class PrintStmt;
 
 class StmtVisitor{
 public:
     virtual ~StmtVisitor() = default;
 
     virtual void visitExprStmt(ExprStmt* stmt) = 0;
+    virtual void visitPrintStmt(PrintStmt* stmt) = 0;
 };
 
 class Stmt{
@@ -82,7 +85,29 @@ public:
     }
 };
 
+class PrintStmt : public Stmt{
+public:
+    Expr* expr;
+
+    PrintStmt( Expr* expr)
+    : expr(expr){}
+
+    void accept(StmtVisitor* visitor) override {
+        return visitor->visitPrintStmt(this);
+    }
+};
+
 class Interpeter : public ExprVisitor, public StmtVisitor{
+private:
+    RuntimeVal evaluate(Expr* expr){
+        return expr->accept(this);
+    }
+
+    void execute(Stmt* stmt){
+        return stmt->accept(this);
+    }
+
+    ofstream outputFile;
 public:
     RuntimeVal visitValue(Value* expr) override{
         RuntimeVal tempVal;
@@ -124,6 +149,14 @@ public:
     void visitExprStmt(ExprStmt* stmt) override{
         RuntimeVal value = evaluate(stmt->expr);
         cout << toString(value) << endl;
+
+        return;
+    }
+
+    void visitPrintStmt(PrintStmt* stmt) override{
+        RuntimeVal value = evaluate(stmt->expr);
+        cout << toString(value) << endl;
+        outputFile << toString(value) << endl;
 
         return;
     }
@@ -177,14 +210,13 @@ public:
 
         return "uhh oh something went wrong interpeter side\n"; 
     }
-
-    private:
-    RuntimeVal evaluate(Expr* expr){
-        return expr->accept(this);
+    
+    Interpeter(){
+        outputFile.open("output.txt");
     }
 
-    void execute(Stmt* stmt){
-        return stmt->accept(this);
+    ~Interpeter(){
+        outputFile.close();
     }
 
 };

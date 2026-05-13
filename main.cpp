@@ -127,6 +127,23 @@ vector<Token> Tokenizer(string filename){
                 tokens.push_back(Token(TokenType::RIGHT_BRACE, "}", line));
                 break;
             
+            case '<':{
+                Cleaner(tempToken, tokens, line);
+
+                char nextChar = textfile.peek();
+
+                if(nextChar == '<'){
+
+                    textfile.get(nextChar);
+                    tokens.push_back(Token(TokenType::OUTPUT, "<<", line));
+                }
+                else{
+
+                }
+
+                break;
+            }
+            
             //if no special characters means character is part of current token
             default:
             tempToken += tempChar;
@@ -173,6 +190,10 @@ void Cleaner(string& tempToken, vector<Token>& tokens, int line){
                 else if(tempToken == "nullptr"){
                     tokens.push_back(Token(TokenType::NIL, tempToken, line));
                     cout << "Is null"<< endl;
+                }
+                
+                else if(tempToken == "cout"){
+                    tokens.push_back(Token(TokenType::PRINT, tempToken, line));
                 }
 
                 else{

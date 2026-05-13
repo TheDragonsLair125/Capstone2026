@@ -16,15 +16,33 @@ class Parser {
      int current = 0;
 
     Stmt* statement(){
+        if(match({PRINT})){
+            return printStatement();
+        }
 
         return expressionStatement();
+    }
+
+    Stmt* printStatement(){
+
+        if(!match({OUTPUT})){
+                    throw runtime_error("Expected '<<' after cout.");
+        }
+
+        Expr* expr = expression();
+
+        if(!match({SEMICOLON})){
+                    throw runtime_error("Expected ';' after expression.");
+        }
+
+        return new PrintStmt(expr);
     }
 
     Stmt* expressionStatement(){
         Expr* expr = expression();
 
         if(!match({SEMICOLON})){
-                    throw runtime_error("Expected ';' after exoression.");
+                    throw runtime_error("Expected ';' after expression.");
         }
         
         return new ExprStmt(expr);
