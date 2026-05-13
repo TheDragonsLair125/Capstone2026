@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 #include "token.h"
+#include "parser.h"
+#include "expression.h"
 //namespace
 using namespace std;
 
@@ -12,7 +14,6 @@ using namespace std;
 //function declerations
 vector<Token> Tokenizer(string filename);
 void Cleaner(string& tempToken, vector<Token>& tokens, int line);
-void Parser(vector<Token> tokens);
 //float Math(vector<Token>& tokens, int& i, int j);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -22,10 +23,21 @@ int main(){
     //variables
     vector<Token> tokens;
     string filename = "test.txt";
+    Interpeter interpeter;
 
     tokens = Tokenizer(filename);
+
+    Parser parser(tokens);
+
+    Expr* expression = parser.parse();
+
+    parser.printExpr(expression);
+
+    cout << "Im gonna interpet all over the place uhhhh\n";
+
+    interpeter.interpret(expression);
     
-    cout << tokens.size() << endl;
+    //cout << tokens.size() << endl;
     
     //Parser(tokens);
 

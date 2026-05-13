@@ -5,6 +5,8 @@
 #include "token.h"
 #include <vector>
 #include "expression.h"
+#include <stdexcept>
+#include <iostream>
 
 using namespace std;
 
@@ -23,6 +25,8 @@ class Parser {
         while(match({PLUS, MINUS})){
             Token oper = previous();
             Expr* right = md();
+            //cout << tokens[current-1].value;
+            //cout << tokens[current].value;
             expr = new Math(expr, oper, right);
         }
 
@@ -35,6 +39,8 @@ class Parser {
         while(match({MULTIPLY, DIVIDE})){
             Token oper = previous();
             Expr* right = value();
+            //cout << tokens[current-1].value;
+            //cout << tokens[current].value;
             expr = new Math(expr, oper, right);
         }
 
@@ -43,11 +49,14 @@ class Parser {
 
     Expr* value(){
         if(match({NUMBER})){
+            //cout << tokens[current-1].value;
             return new Value(previous());
         }
+        
+        throw runtime_error("Expected Value.");
     }
 
-    bool match(std::initializer_list<TokenType> types){
+    bool match(initializer_list<TokenType> types){
 
         for (TokenType type: types){
             if (check(type)) {
@@ -89,12 +98,40 @@ class Parser {
         return peek().type == ENDFILE;
     }
 
+    
+
 public:
      Parser(vector<Token> tokens)
     :tokens(tokens){}
 
     Expr* parse(){
-        expression();
+        try{
+            return expression();
+        }
+        catch(const exception& e){
+            cout << e.what() << endl;
+            return nullptr;
+        }       
+    }
+
+    void printExpr(Expr* expr) {
+
+    if (auto val = dynamic_cast<Value*>(expr)) {
+        cout << val->value.value;
+    }
+
+    else if (auto math = dynamic_cast<Math*>(expr)) {
+
+        cout << "(";
+
+        printExpr(math->left);
+
+        cout << " " << math->oper.value << " ";
+
+        printExpr(math->right);
+
+        cout << ")";
+    }
     }
 
 };

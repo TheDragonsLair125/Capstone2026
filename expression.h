@@ -6,6 +6,8 @@
 #include <string>
 #include "runtime.h"
 
+using namespace std;
+
 class Math;
 class Value;
 
@@ -48,6 +50,103 @@ public:
 
     RuntimeVal accept(ExprVisitor* visitor) override {
         return visitor->visitValue(this);
+    }
+
+};
+
+class Interpeter : public ExprVisitor{
+public:
+    RuntimeVal visitValue(Value* expr) override{
+        RuntimeVal tempVal;
+        tempVal.type = NUMBER_VAL;
+        tempVal.numberVal = stod(expr->value.value);
+        return tempVal;
+    }
+
+    RuntimeVal visitMath(Math* expr) override{
+        RuntimeVal left = evaluate(expr->left);
+        RuntimeVal right = evaluate(expr->right);
+
+        RuntimeVal result;
+        result.type = NUMBER_VAL;
+
+        switch (expr->oper.type) {
+            case MINUS:
+                result.numberVal = left.numberVal - right.numberVal;
+                return result;
+
+            case DIVIDE:
+                result.numberVal = left.numberVal / right.numberVal;
+                return result;
+
+            case MULTIPLY:
+                result.numberVal = left.numberVal * right.numberVal;
+                return result;
+
+            case PLUS:
+                result.numberVal = left.numberVal + right.numberVal;
+                return result;
+
+            default:
+                return RuntimeVal(); // nil
+        }
+
+    }
+
+    void interpret(Expr* expr){
+        try{
+            RuntimeVal value = evaluate(expr);
+            cout << toString(value);
+        }
+        catch(const exception& e){
+            cout << "error";
+        }
+    }
+
+    string toString(RuntimeVal value){
+        if (value.type == NULL_VAL){
+            return "null";
+        }
+
+        if(value.type == NUMBER_VAL){
+            
+            string text = to_string(value.numberVal);
+
+            if(text.find('.') != string::npos){
+
+                while(!text.empty() && text.back() == '0'){
+                    text.pop_back();
+                }
+
+                if(!text.empty() && text.back() == '.'){
+                    text.pop_back();
+                }
+            }
+
+            return text;
+        }
+
+        if (value.type == STRING_VAL){
+            return value.stringVal;
+        }
+
+        if (value.type == BOOL_VAL){
+
+            if(value.boolVal){
+                return "true";
+            }
+
+            else{
+                return "false";
+            }
+        }
+
+        return "uhh oh something went wrong interpeter side\n"; 
+    }
+
+    private:
+    RuntimeVal evaluate(Expr* expr){
+        return expr->accept(this);
     }
 
 };

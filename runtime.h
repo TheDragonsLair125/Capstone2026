@@ -6,7 +6,7 @@ enum ValueType{
     NUMBER_VAL,
     STRING_VAL,
     BOOL_VAL,
-    NIL_VAL,
+    NULL_VAL,
 };
 
 class RuntimeVal {
@@ -18,6 +18,6 @@ public:
     bool boolVal;
 
     RuntimeVal(){
-        type = NIL_VAL;
+        type = NULL_VAL;
     }
 };
