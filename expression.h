@@ -296,6 +296,46 @@ public:
                 return result;
                 break;
 
+            case EQUAL_TO:
+                result.type = BOOL_VAL;
+                if(left.type == NUMBER_VAL && right.type == NUMBER_VAL){
+                    result.boolVal = left.numberVal == right.numberVal;
+                }
+
+                else if(left.type == STRING_VAL && right.type == STRING_VAL){
+                    result.boolVal = left.stringVal == right.stringVal;
+                }
+
+                else if(left.type == BOOL_VAL && right.type == BOOL_VAL){
+                    result.boolVal = left.boolVal == right.boolVal;
+                }
+                
+                else{
+                    throw std::runtime_error("Can not compare type " + to_string(left.type) + " to " + to_string(right.type) + " at line: " + std::to_string(expr->oper.line));
+                }
+                return result;
+                break;
+            
+            case NOT_EQUAL_TO:
+                result.type = BOOL_VAL;
+                if(left.type == NUMBER_VAL && right.type == NUMBER_VAL){
+                    result.boolVal = left.numberVal != right.numberVal;
+                }
+
+                else if(left.type == STRING_VAL && right.type == STRING_VAL){
+                    result.boolVal = left.stringVal != right.stringVal;
+                }
+
+                else if(left.type == BOOL_VAL && right.type == BOOL_VAL){
+                    result.boolVal = left.boolVal != right.boolVal;
+                }
+                
+                else{
+                    throw std::runtime_error("Can not compare type " + to_string(left.type) + " to " + to_string(right.type) + " at line: " + std::to_string(expr->oper.line));
+                }
+                return result;
+                break;
+
             default:
                 return RuntimeVal(); // nil
                 break;
