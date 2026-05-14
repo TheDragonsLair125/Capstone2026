@@ -120,6 +120,7 @@ class ExprStmt;
 class PrintStmt;
 class VarStmt;
 class InputStmt;
+class IfStmt;
 
 class StmtVisitor{
 public:
@@ -129,6 +130,7 @@ public:
     virtual void visitPrintStmt(PrintStmt* stmt) = 0;
     virtual void visitVarStmt(VarStmt* stmt) = 0;
     virtual void visitInputStmt(InputStmt* stmt) = 0;
+    virtual void visitIfStmt(IfStmt* stmt) = 0;
 };
 
 class Stmt{
@@ -185,6 +187,21 @@ public:
 
     void accept(StmtVisitor* visitor) override {
         return visitor->visitVarStmt(this);
+    }
+
+};
+
+class IfStmt : public Stmt{
+public:
+    Expr* condition;
+    Stmt* ifCode;
+    Stmt* elseCode;
+
+    IfStmt(Expr* condition, Stmt* ifCode, Stmt* elseCode)
+    : condition(condition), ifCode(ifCode), elseCode(elseCode){}
+
+    void accept(StmtVisitor* visitor) override{
+        return visitor->visitIfStmt(this);
     }
 };
 
@@ -461,6 +478,18 @@ public:
         }
 
         memory.define(stmt->name.value, variable);
+    }
+
+    void visitIfStmt(IfStmt* stmt) override{
+        if(isTrue(evaluate(stmt->condition))){
+            execute(stmt->ifCode);
+        }
+        
+        else if(stmt->elseCode != nullptr){
+            execute(stmt->elseCode);
+        }
+
+        return;
     }
 
     void interpret(Stmt* stmt){

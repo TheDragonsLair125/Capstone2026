@@ -19,7 +19,8 @@ enum TokenType{
     VAR, INT, NIL, STRINGVAR, BOOL,
 
     //Others
-    NUMBER, STRING, PRINT, OUTPUT, CIN, INPUT, ENDFILE
+    NUMBER, STRING, PRINT, OUTPUT, CIN, INPUT, IF,
+    ELSE, ENDFILE
 };
 
 class Token{

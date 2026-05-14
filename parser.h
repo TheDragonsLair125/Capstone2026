@@ -16,7 +16,7 @@ class Parser {
      int current = 0;
 
     Stmt* declaration(){
-        try{
+        
             if(match({INT})){
                 return varDecleration(NUMBER_VAL);
             }
@@ -30,15 +30,12 @@ class Parser {
             }
 
             return statement();
-        }
-        catch(const exception& e){
-            return nullptr;
-        }
+        
     }
 
     Stmt* varDecleration(ValueType declaredType){
         if(peek().type != VAR){
-            throw runtime_error("Expected name after deceleariton");
+            throw runtime_error("Expected name after declaration");
         }
 
         Token name = advance();
@@ -62,6 +59,12 @@ class Parser {
         }
         if(match({CIN})){
             return InputStatement();
+        }
+        if(match({IF})){
+            return IfStatement();
+        }
+        if(match({ELSE})){
+            throw runtime_error("Expected a statement");
         }
 
         return expressionStatement();
@@ -98,6 +101,30 @@ class Parser {
         }
 
         return new InputStmt(name);
+    }
+
+    Stmt* IfStatement(){
+        if(!match({LEFT_PAREN})){
+            throw runtime_error("Expected '(' after if.");
+        }
+        Expr* condition = expression();
+        if(!match({RIGHT_PAREN})){
+            throw runtime_error("Expected ')' after condition.");
+        }
+
+        Stmt* ifCode = statement();
+        Stmt* elseCode = nullptr;
+
+        if(match({ELSE})){
+            if(match({IF})){
+                elseCode = IfStatement();
+            }
+            else{
+            elseCode = statement();
+            }        
+        }
+
+        return new IfStmt(condition, ifCode, elseCode);
     }
 
     Stmt* expressionStatement(){

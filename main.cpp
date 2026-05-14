@@ -307,6 +307,14 @@ void Cleaner(string& tempToken, vector<Token>& tokens, int line){
                     tokens.push_back(Token(TokenType::FALSE, tempToken, line));
                 }
 
+                else if(tempToken == "if"){
+                    tokens.push_back(Token(TokenType::IF, tempToken, line));
+                }
+
+                else if(tempToken == "else"){
+                    tokens.push_back(Token(TokenType::ELSE, tempToken, line));
+                }
+
                 else{
                     tokens.push_back(Token(TokenType::VAR, tempToken, line));
                 }
