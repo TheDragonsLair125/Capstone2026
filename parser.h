@@ -25,6 +25,10 @@ class Parser {
                 return varDecleration(STRING_VAL);
             }
 
+            if(match({BOOL})){
+                return varDecleration(BOOL_VAL);
+            }
+
             return statement();
         }
         catch(const exception& e){
@@ -191,7 +195,7 @@ class Parser {
     }
 
     Expr* value(){
-        if(match({NUMBER,STRING})){
+        if(match({NUMBER, STRING, TRUE, FALSE})){
             //cout << tokens[current-1].value;
             return new Value(previous());
         }

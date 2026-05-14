@@ -215,6 +215,16 @@ public:
             tempVal.stringVal = expr->value.value;
         }
 
+        else if(expr->value.type == TRUE){
+            tempVal.type = BOOL_VAL;
+            tempVal.boolVal = true;
+        }
+
+        else if(expr->value.type == FALSE){
+            tempVal.type = BOOL_VAL;
+            tempVal.boolVal = false;
+        }
+
         return tempVal;
     }
 
