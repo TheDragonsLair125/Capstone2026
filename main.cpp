@@ -117,11 +117,22 @@ vector<Token> Tokenizer(string filename){
                         break;
                     }
                     //come back to this later for double
-                    case '=':
+                    case '=':{
                         Cleaner(tempToken, tokens, line);
-                        tokens.push_back(Token(TokenType::EQUALS, "=", line));
-                        break;
 
+                        char nextChar = textfile.peek();
+
+                        if(nextChar == '='){
+
+                            textfile.get(nextChar);
+                            tokens.push_back(Token(TokenType::EQUAL_TO, "==", line));
+                        }
+                        else{
+                        tokens.push_back(Token(TokenType::EQUALS, "=", line));
+                        }
+
+                        break;
+                    }
                     case '(':
                         Cleaner(tempToken, tokens, line);
                         tokens.push_back(Token(TokenType::LEFT_PAREN, "(", line));
@@ -152,8 +163,12 @@ vector<Token> Tokenizer(string filename){
                             textfile.get(nextChar);
                             tokens.push_back(Token(TokenType::OUTPUT, "<<", line));
                         }
+                        else if(nextChar == '='){
+                            textfile.get(nextChar);
+                            tokens.push_back(Token(TokenType::LESS_THAN_EQUAL, "<=", line));
+                        }
                         else{
-
+                            tokens.push_back(Token(TokenType::LESS_THAN, "<", line));
                         }
 
                         break;
@@ -169,8 +184,12 @@ vector<Token> Tokenizer(string filename){
                             textfile.get(nextChar);
                             tokens.push_back(Token(TokenType::INPUT, ">>", line));
                         }
+                        else if(nextChar == '='){
+                            textfile.get(nextChar);
+                            tokens.push_back(Token(TokenType::GREATER_THAN_EQUAL, ">=", line));
+                        }
                         else{
-
+                            tokens.push_back(Token(TokenType::GREATER_THAN, ">", line));
                         }
 
                         break;
@@ -180,6 +199,23 @@ vector<Token> Tokenizer(string filename){
                         Cleaner(tempToken, tokens, line);
                         inString = true;
                         break;
+                    
+                    case '!':{
+                        Cleaner(tempToken, tokens, line);
+
+                        char nextChar = textfile.peek();
+
+                        if(nextChar == '='){
+
+                            textfile.get(nextChar);
+                            tokens.push_back(Token(TokenType::NOT_EQUAL_TO, "!=", line));
+                        }
+                        else{
+                        tokens.push_back(Token(TokenType::NOT, "!", line));
+                        }
+
+                        break;
+                    }
             
                     //if no special characters means character is part of current token
                     default:
@@ -257,6 +293,18 @@ void Cleaner(string& tempToken, vector<Token>& tokens, int line){
 
                 else if(tempToken == "string"){
                     tokens.push_back(Token(TokenType::STRINGVAR, tempToken, line));
+                }
+
+                else if(tempToken == "bool"){
+                    tokens.push_back(Token(TokenType::BOOL, tempToken, line));
+                }
+
+                else if(tempToken == "true"){
+                    tokens.push_back(Token(TokenType::TRUE, tempToken, line));
+                }
+
+                else if(tempToken == "false"){
+                    tokens.push_back(Token(TokenType::FALSE, tempToken, line));
                 }
 
                 else{

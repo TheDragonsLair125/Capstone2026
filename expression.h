@@ -15,6 +15,7 @@ class Value;
 class Var;
 class Assign;
 class Group;
+class Unary;
 
 class ExprVisitor {
 public:
@@ -25,6 +26,7 @@ public:
     virtual RuntimeVal visitVar(Var* expr) = 0;
     virtual RuntimeVal visitAssign(Assign* expr) = 0;
     virtual RuntimeVal visitGroup(Group* expr) = 0;
+    virtual RuntimeVal visitUnary(Unary* expr) = 0;
 };
 
 class Expr{
@@ -99,6 +101,19 @@ public:
         return visitor->visitGroup(this);
     }
 
+};
+
+class Unary : public Expr{
+public:
+    Token oper;
+    Expr* right;
+
+    Unary(Token oper, Expr* right)
+    :oper(oper), right(right){}
+
+    RuntimeVal accept(ExprVisitor* visitor) override{
+        return visitor->visitUnary(this);
+    }
 };
 
 class ExprStmt;
@@ -247,6 +262,30 @@ public:
 
                 break;
 
+            case LESS_THAN:
+                result.type = BOOL_VAL;
+                result.boolVal = left.numberVal < right.numberVal;
+                return result;
+                break;
+
+            case LESS_THAN_EQUAL:
+                result.type = BOOL_VAL;
+                result.boolVal = left.numberVal <= right.numberVal;
+                return result;
+                break;
+
+            case GREATER_THAN:
+                result.type = BOOL_VAL;
+                result.boolVal = left.numberVal > right.numberVal;
+                return result;
+                break;
+
+            case GREATER_THAN_EQUAL:
+                result.type = BOOL_VAL;
+                result.boolVal = left.numberVal >= right.numberVal;
+                return result;
+                break;
+
             default:
                 return RuntimeVal(); // nil
                 break;
@@ -264,6 +303,52 @@ public:
         memory.assign(expr->name, value);
 
         return value;
+    }
+
+    RuntimeVal visitGroup(Group* expr) override{
+        return evaluate(expr->expr);
+    }
+
+    RuntimeVal visitUnary(Unary* expr) override{
+        RuntimeVal right = evaluate(expr->right);
+
+        switch(expr->oper.type){
+            case MINUS:{
+                if(right.type != NUMBER_VAL){
+                    throw runtime_error("Operand must be number at line: " + std::to_string(expr->oper.line));
+                }
+
+                RuntimeVal result;
+                result.type = NUMBER_VAL;
+                result.numberVal = -right.numberVal;
+                return result;
+                break;
+            }
+
+            case NOT:{
+                RuntimeVal result;
+                result.type = BOOL_VAL;
+                result.boolVal = !isTrue(right);
+
+                return result;
+            }
+            
+        }
+        
+        return RuntimeVal();
+    }
+
+    bool isTrue(RuntimeVal value){
+
+        if(value.type == NULL_VAL){
+            return false;
+        }
+
+        if(value.type == BOOL_VAL){
+            return value.boolVal;
+        }
+
+        return true;
     }
 
     void visitExprStmt(ExprStmt* stmt) override{
@@ -326,10 +411,6 @@ public:
         }
 
         memory.define(stmt->name.value, variable);
-    }
-
-    RuntimeVal visitGroup(Group* expr) override{
-        return evaluate(expr->expr);
     }
 
     void interpret(Stmt* stmt){

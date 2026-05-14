@@ -111,7 +111,7 @@ class Parser {
     }
 
     Expr* assignment(){
-        Expr* expr = as();
+        Expr* expr = equality();
         
         if(match({EQUALS})){
 
@@ -123,6 +123,30 @@ class Parser {
             }
 
             throw runtime_error("Invalid assignment target.");
+        }
+
+        return expr;
+    }
+
+    Expr* equality(){
+        Expr* expr = comparison();
+
+        while(match({EQUAL_TO, NOT_EQUAL_TO})){
+            Token oper = previous();
+            Expr* right = comparison();
+            expr = new Math(expr, oper, right);
+        }
+
+        return expr;
+    }
+
+    Expr* comparison(){
+        Expr* expr = as();
+
+        while(match({GREATER_THAN, GREATER_THAN_EQUAL, LESS_THAN, LESS_THAN_EQUAL})){
+            Token oper = previous();
+            Expr* right = as();
+            expr = new Math(expr, oper, right);
         }
 
         return expr;
@@ -143,17 +167,27 @@ class Parser {
     }
 
     Expr* md(){
-        Expr* expr = value();
+        Expr* expr = unary();
 
         while(match({MULTIPLY, DIVIDE})){
             Token oper = previous();
-            Expr* right = value();
+            Expr* right = unary();
             //cout << tokens[current-1].value;
             //cout << tokens[current].value;
             expr = new Math(expr, oper, right);
         }
 
         return expr;
+    }
+
+    Expr* unary(){
+        if(match({MINUS, NOT})){
+            Token oper = previous();
+            Expr* right = unary();
+            return new Unary(oper, right);
+        }
+
+        return value();
     }
 
     Expr* value(){
