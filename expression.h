@@ -89,6 +89,7 @@ public:
 class ExprStmt;
 class PrintStmt;
 class VarStmt;
+class InputStmt;
 
 class StmtVisitor{
 public:
@@ -97,6 +98,7 @@ public:
     virtual void visitExprStmt(ExprStmt* stmt) = 0;
     virtual void visitPrintStmt(PrintStmt* stmt) = 0;
     virtual void visitVarStmt(VarStmt* stmt) = 0;
+    virtual void visitInputStmt(InputStmt* stmt) = 0;
 };
 
 class Stmt{
@@ -130,13 +132,26 @@ public:
     }
 };
 
+class InputStmt: public Stmt{
+public:
+    Token name;
+
+    InputStmt(Token name)
+    : name(name){}
+
+    void accept(StmtVisitor* visitor) override {
+        return visitor->visitInputStmt(this);
+    }
+};
+
 class VarStmt : public Stmt{
 public:
     Token name;
+    ValueType declaredType;
     Expr* expr;
 
-    VarStmt(Token name, Expr* expr)
-    : name(name), expr(expr){}
+    VarStmt(Token name, ValueType declaredType, Expr* expr)
+    : name(name), declaredType(declaredType), expr(expr){}
 
     void accept(StmtVisitor* visitor) override {
         return visitor->visitVarStmt(this);
@@ -159,8 +174,17 @@ private:
 public:
     RuntimeVal visitValue(Value* expr) override{
         RuntimeVal tempVal;
-        tempVal.type = NUMBER_VAL;
-        tempVal.numberVal = stod(expr->value.value);
+
+        if(expr->value.type == NUMBER){
+            tempVal.type = NUMBER_VAL;
+            tempVal.numberVal = stod(expr->value.value);
+        }
+        
+        else if(expr->value.type == STRING){
+            tempVal.type = STRING_VAL;
+            tempVal.stringVal = expr->value.value;
+        }
+
         return tempVal;
     }
 
@@ -175,21 +199,42 @@ public:
             case MINUS:
                 result.numberVal = left.numberVal - right.numberVal;
                 return result;
+                break;
 
             case DIVIDE:
                 result.numberVal = left.numberVal / right.numberVal;
                 return result;
+                break;
 
             case MULTIPLY:
                 result.numberVal = left.numberVal * right.numberVal;
                 return result;
+                break;
 
             case PLUS:
-                result.numberVal = left.numberVal + right.numberVal;
-                return result;
+                if(left.type == NUMBER_VAL && right.type == NUMBER_VAL){
+                    result.numberVal = left.numberVal + right.numberVal;
+                    return result;
+                }
+                
+                if(left.type == STRING_VAL || right.type == STRING_VAL){
+                    if(left.type == NUMBER_VAL){
+                        left.stringVal = toString(left);
+                    }
+                    if(right.type == NUMBER_VAL){
+                        right.stringVal = toString(right);
+                    }             
+                    
+                    result.type = STRING_VAL;
+                    result.stringVal = left.stringVal + right.stringVal;
+                    return result;
+                }
+
+                break;
 
             default:
                 return RuntimeVal(); // nil
+                break;
         }
 
     }
@@ -221,13 +266,51 @@ public:
         return;
     }
 
-    void visitVarStmt(VarStmt* stmt) override{
-        RuntimeVal value;
-        if(stmt->expr != nullptr){
-            value = evaluate(stmt->expr);
+    void visitInputStmt(InputStmt* stmt) override{
+        Variable variable = memory.getVariable(stmt->name);
+
+        if(variable.declaredType == NUMBER_VAL){
+
+            double input;
+            std::cin >> input;
+
+            RuntimeVal value;
+            value.type = NUMBER_VAL;
+            value.numberVal = input;
+
+            memory.assign(stmt->name, value);
         }
 
-        memory.define(stmt->name.value, value);
+        else if(variable.declaredType == STRING_VAL){
+
+            std::string input;
+            std::cin >> input;
+
+            RuntimeVal value;
+            value.type = STRING_VAL;
+            value.stringVal = input;
+
+            memory.assign(stmt->name, value);
+        }
+    }
+
+    void visitVarStmt(VarStmt* stmt) override{
+        Variable variable;
+        variable.declaredType = stmt->declaredType;
+
+        if(stmt->expr != nullptr){
+            variable.value = evaluate(stmt->expr);
+
+            if(variable.value.type != variable.declaredType){
+                throw runtime_error("Type mismatch in variable declaration for: " + stmt->name.value + " ,at line: " + std::to_string(stmt->name.line));
+            }
+        }
+
+        else{
+            variable.value = RuntimeVal();
+        }
+
+        memory.define(stmt->name.value, variable);
     }
 
     void interpret(Stmt* stmt){
@@ -235,7 +318,7 @@ public:
             execute(stmt);
         }
         catch(const exception& e){
-            cout << "error";
+            cout << e.what() << endl;
         }
     }
 

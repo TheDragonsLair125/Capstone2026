@@ -1,4 +1,7 @@
-int a = 20;
-cout << a;
-a = a + 5 * 2;
-cout << a;
+string testString;
+int testInt;
+cin >> testString;
+cout << testString;
+cin >> testInt;
+cout << testInt;
+cout << testInt + 5;

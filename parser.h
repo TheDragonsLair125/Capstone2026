@@ -18,7 +18,11 @@ class Parser {
     Stmt* declaration(){
         try{
             if(match({INT})){
-                return varDecleration();
+                return varDecleration(NUMBER_VAL);
+            }
+
+            if(match({STRINGVAR})){
+                return varDecleration(STRING_VAL);
             }
 
             return statement();
@@ -28,7 +32,7 @@ class Parser {
         }
     }
 
-    Stmt* varDecleration(){
+    Stmt* varDecleration(ValueType declaredType){
         if(peek().type != VAR){
             throw runtime_error("Expected name after deceleariton");
         }
@@ -44,13 +48,16 @@ class Parser {
                     throw runtime_error("Expected ';' after expression.");
         }
 
-        return new VarStmt(name, initial);
+        return new VarStmt(name, declaredType, initial);
 
     }
 
     Stmt* statement(){
         if(match({PRINT})){
             return printStatement();
+        }
+        if(match({CIN})){
+            return InputStatement();
         }
 
         return expressionStatement();
@@ -69,6 +76,24 @@ class Parser {
         }
 
         return new PrintStmt(expr);
+    }
+
+    Stmt* InputStatement(){
+        if(!match({INPUT})){
+                    throw std::runtime_error("Expected '>>' after cin.");
+        }
+
+        if(!match({VAR})){
+                    throw std::runtime_error("Expected variable after >>.");
+        }
+
+        Token name = previous();
+
+        if(!match({SEMICOLON})){
+                    throw std::runtime_error("Expected ';' after expression.");
+        }
+
+        return new InputStmt(name);
     }
 
     Stmt* expressionStatement(){
@@ -132,14 +157,13 @@ class Parser {
     }
 
     Expr* value(){
-        if(match({NUMBER})){
+        if(match({NUMBER,STRING})){
             //cout << tokens[current-1].value;
             return new Value(previous());
         }
         else if(match({VAR})){
             return new Var(previous());
         }
-        
         throw runtime_error("Expected Value.");
     }
 

@@ -56,6 +56,8 @@ vector<Token> Tokenizer(string filename){
     string tempToken;
     vector<Token> tokens;
     char tempChar;
+    bool inString = false;
+    bool inComment = false;
 
     //gets file
     textfile.open (filename);
@@ -65,91 +67,142 @@ vector<Token> Tokenizer(string filename){
         //loop to read file char by char till end
         while( textfile.get(tempChar)){
             
-            //switch case to every special character that start would mean is a new token
-            switch(tempChar){
-            case ' ':
-                Cleaner(tempToken, tokens, line);
-                break;
+            if(inComment == false){
+                if(inString == false){
+                //switch case to every special character that start would mean is a new token
+                    switch(tempChar){
+                    case ' ':
+                        Cleaner(tempToken, tokens, line);
+                        break;
 
-            case '\n':
-                //in every switch statement makes sure blank tokens not added to vector
-                Cleaner(tempToken, tokens, line);
-                line++;
-                break;
+                    case '\n':
+                        //in every switch statement makes sure blank tokens not added to vector
+                        Cleaner(tempToken, tokens, line);
+                        line++;
+                        break;
             
-            case ';':
-                Cleaner(tempToken, tokens, line);
-                //pushing back symbol as token as its what caused this case, used in all future statements
-                tokens.push_back(Token(TokenType::SEMICOLON, ";", line));
-                break;
+                    case ';':
+                        Cleaner(tempToken, tokens, line);
+                        //pushing back symbol as token as its what caused this case, used in all future statements
+                        tokens.push_back(Token(TokenType::SEMICOLON, ";", line));
+                        break;
 
-            case '+':
-                Cleaner(tempToken, tokens, line);
-                tokens.push_back(Token(TokenType::PLUS, "+", line));
-                break;
+                    case '+':
+                        Cleaner(tempToken, tokens, line);
+                        tokens.push_back(Token(TokenType::PLUS, "+", line));
+                        break;
             
-            case '-':
-                Cleaner(tempToken, tokens, line);
-                tokens.push_back(Token(TokenType::MINUS, "-", line));
-                break;
+                    case '-':
+                        Cleaner(tempToken, tokens, line);
+                        tokens.push_back(Token(TokenType::MINUS, "-", line));
+                        break;
 
-            case '*':
-                Cleaner(tempToken, tokens, line);
-                tokens.push_back(Token(TokenType::MULTIPLY, "*", line));
-                break;
+                    case '*':
+                        Cleaner(tempToken, tokens, line);
+                        tokens.push_back(Token(TokenType::MULTIPLY, "*", line));
+                        break;
 
-            //come back to this later for double
-            case '/':
-                Cleaner(tempToken, tokens, line);
-                tokens.push_back(Token(TokenType::DIVIDE, "/", line));
-                break;
+                    //come back to this later for double
+                    case '/':{
+                        Cleaner(tempToken, tokens, line);
+                        char nextChar = textfile.peek();
+
+                        if(nextChar == '/'){
+                            textfile.get(nextChar);
+                            inComment = true;
+                        }
+                        else{
+                        tokens.push_back(Token(TokenType::DIVIDE, "/", line));
+                        }
+                        break;
+                    }
+                    //come back to this later for double
+                    case '=':
+                        Cleaner(tempToken, tokens, line);
+                        tokens.push_back(Token(TokenType::EQUALS, "=", line));
+                        break;
+
+                    case '(':
+                        Cleaner(tempToken, tokens, line);
+                        tokens.push_back(Token(TokenType::LEFT_PAREN, "(", line));
+                        break;
             
-            //come back to this later for double
-            case '=':
-                Cleaner(tempToken, tokens, line);
-                tokens.push_back(Token(TokenType::EQUALS, "=", line));
-                break;
-
-            case '(':
-                Cleaner(tempToken, tokens, line);
-                tokens.push_back(Token(TokenType::LEFT_PAREN, "(", line));
-                break;
+                    case ')':
+                        Cleaner(tempToken, tokens, line);
+                        tokens.push_back(Token(TokenType::RIGHT_PAREN, ")", line));
+                        break;
             
-            case ')':
-                Cleaner(tempToken, tokens, line);
-                tokens.push_back(Token(TokenType::RIGHT_PAREN, ")", line));
-                break;
+                    case '{':
+                        Cleaner(tempToken, tokens, line);
+                        tokens.push_back(Token(TokenType::LEFT_BRACE, "{", line));
+                        break;
             
-            case '{':
-                Cleaner(tempToken, tokens, line);
-                tokens.push_back(Token(TokenType::LEFT_BRACE, "{", line));
-                break;
+                    case '}':
+                        Cleaner(tempToken, tokens, line);
+                        tokens.push_back(Token(TokenType::RIGHT_BRACE, "}", line));
+                        break;
             
-            case '}':
-                Cleaner(tempToken, tokens, line);
-                tokens.push_back(Token(TokenType::RIGHT_BRACE, "}", line));
-                break;
+                    case '<':{
+                        Cleaner(tempToken, tokens, line);
+
+                        char nextChar = textfile.peek();
+
+                        if(nextChar == '<'){
+
+                            textfile.get(nextChar);
+                            tokens.push_back(Token(TokenType::OUTPUT, "<<", line));
+                        }
+                        else{
+
+                        }
+
+                        break;
+                    }
+
+                    case '>':{
+                        Cleaner(tempToken, tokens, line);
+
+                        char nextChar = textfile.peek();
+
+                        if(nextChar == '>'){
+
+                            textfile.get(nextChar);
+                            tokens.push_back(Token(TokenType::INPUT, ">>", line));
+                        }
+                        else{
+
+                        }
+
+                        break;
+                    }
+           
+                    case '"':
+                        Cleaner(tempToken, tokens, line);
+                        inString = true;
+                        break;
             
-            case '<':{
-                Cleaner(tempToken, tokens, line);
-
-                char nextChar = textfile.peek();
-
-                if(nextChar == '<'){
-
-                    textfile.get(nextChar);
-                    tokens.push_back(Token(TokenType::OUTPUT, "<<", line));
+                    //if no special characters means character is part of current token
+                    default:
+                    tempToken += tempChar;
+                    }
                 }
                 else{
+                    if(tempChar == '"'){
+                        tokens.push_back(Token(TokenType::STRING, tempToken, line));
+                        inString = false;
+                        tempToken = "";
+                    }
 
+                    else{
+                        tempToken += tempChar;
+                    }
                 }
-
-                break;
             }
-            
-            //if no special characters means character is part of current token
-            default:
-            tempToken += tempChar;
+            else{
+                if(tempChar == '\n'){
+                    line++;
+                    inComment = false;
+                }
             }
         }
 
@@ -196,6 +249,14 @@ void Cleaner(string& tempToken, vector<Token>& tokens, int line){
                 
                 else if(tempToken == "cout"){
                     tokens.push_back(Token(TokenType::PRINT, tempToken, line));
+                }
+
+                else if(tempToken == "cin"){
+                    tokens.push_back(Token(TokenType::CIN, tempToken, line));
+                }
+
+                else if(tempToken == "string"){
+                    tokens.push_back(Token(TokenType::STRINGVAR, tempToken, line));
                 }
 
                 else{
