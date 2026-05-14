@@ -164,6 +164,16 @@ class Parser {
         else if(match({VAR})){
             return new Var(previous());
         }
+
+        if(match({LEFT_PAREN})){
+            Expr* expr = expression();
+
+            if(!match({RIGHT_PAREN})){
+                    throw runtime_error("Expected ';' after expression.");
+            }
+
+            return new Group(expr);
+        }
         throw runtime_error("Expected Value.");
     }
 

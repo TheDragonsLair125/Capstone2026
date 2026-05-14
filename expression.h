@@ -14,6 +14,7 @@ class Math;
 class Value;
 class Var;
 class Assign;
+class Group;
 
 class ExprVisitor {
 public:
@@ -23,6 +24,7 @@ public:
     virtual RuntimeVal visitValue(Value* expr) = 0;
     virtual RuntimeVal visitVar(Var* expr) = 0;
     virtual RuntimeVal visitAssign(Assign* expr) = 0;
+    virtual RuntimeVal visitGroup(Group* expr) = 0;
 };
 
 class Expr{
@@ -81,9 +83,22 @@ public:
     Assign(Token name, Expr* value)
     : name(name), value(value){}
 
-    RuntimeVal accept(ExprVisitor* visitor){
+    RuntimeVal accept(ExprVisitor* visitor) override{
         return visitor->visitAssign(this);
     }
+};
+
+class Group : public Expr{
+public:
+    Expr* expr;
+
+    Group(Expr* expr)
+    : expr(expr){}
+
+    RuntimeVal accept(ExprVisitor* visitor) override{
+        return visitor->visitGroup(this);
+    }
+
 };
 
 class ExprStmt;
@@ -311,6 +326,10 @@ public:
         }
 
         memory.define(stmt->name.value, variable);
+    }
+
+    RuntimeVal visitGroup(Group* expr) override{
+        return evaluate(expr->expr);
     }
 
     void interpret(Stmt* stmt){
