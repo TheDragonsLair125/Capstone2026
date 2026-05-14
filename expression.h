@@ -121,6 +121,7 @@ class PrintStmt;
 class VarStmt;
 class InputStmt;
 class IfStmt;
+class BlockStmt;
 
 class StmtVisitor{
 public:
@@ -131,6 +132,7 @@ public:
     virtual void visitVarStmt(VarStmt* stmt) = 0;
     virtual void visitInputStmt(InputStmt* stmt) = 0;
     virtual void visitIfStmt(IfStmt* stmt) = 0;
+    virtual void visitBlockStmt(BlockStmt* stmt) = 0;
 };
 
 class Stmt{
@@ -202,6 +204,18 @@ public:
 
     void accept(StmtVisitor* visitor) override{
         return visitor->visitIfStmt(this);
+    }
+};
+
+class BlockStmt : public Stmt{
+public:
+    vector<Stmt*> statements;
+
+    BlockStmt(vector<Stmt*> statements)
+    :statements(statements){}
+
+    void accept(StmtVisitor* visitor){
+        return visitor->visitBlockStmt(this);
     }
 };
 
@@ -490,6 +504,16 @@ public:
         }
 
         return;
+    }
+
+    void visitBlockStmt(BlockStmt* stmt) override{
+        executeBlock(stmt->statements);
+    }
+
+    void executeBlock(vector<Stmt*> statements){
+        for(Stmt* statement: statements){
+            execute(statement);
+        }
     }
 
     void interpret(Stmt* stmt){

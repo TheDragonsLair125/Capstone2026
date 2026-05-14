@@ -112,7 +112,7 @@ class Parser {
             throw runtime_error("Expected ')' after condition.");
         }
 
-        Stmt* ifCode = statement();
+        Stmt* ifCode = bodyStatement();
         Stmt* elseCode = nullptr;
 
         if(match({ELSE})){
@@ -120,11 +120,35 @@ class Parser {
                 elseCode = IfStatement();
             }
             else{
-            elseCode = statement();
+            elseCode = bodyStatement();
             }        
         }
 
         return new IfStmt(condition, ifCode, elseCode);
+    }
+
+    Stmt* bodyStatement(){
+        if(match({LEFT_BRACE})){
+                return blockStatement();
+        }
+        else{
+            return statement();
+        }
+    }
+
+    Stmt* blockStatement(){
+        vector<Stmt*> statements;
+        
+        while(!check(RIGHT_BRACE)){
+            if(isAtEnd()){
+                throw runtime_error("Expected '}'.");
+            }
+            statements.push_back(declaration());
+        }
+
+        advance();
+
+        return new BlockStmt(statements);
     }
 
     Stmt* expressionStatement(){
@@ -301,6 +325,7 @@ public:
         }
         catch(const exception& e){
             cout << e.what() << endl;
+            return {};
         }       
 
         return statements;
