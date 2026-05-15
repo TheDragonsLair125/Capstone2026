@@ -12,7 +12,6 @@
 *.env
 output.txt
 test.txt
-demomain.txt
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

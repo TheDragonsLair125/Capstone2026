@@ -315,6 +315,10 @@ void Cleaner(string& tempToken, vector<Token>& tokens, int line){
                     tokens.push_back(Token(TokenType::ELSE, tempToken, line));
                 }
 
+                else if(tempToken == "while"){
+                    tokens.push_back(Token(TokenType::WHILE, tempToken, line));
+                }
+
                 else{
                     tokens.push_back(Token(TokenType::VAR, tempToken, line));
                 }

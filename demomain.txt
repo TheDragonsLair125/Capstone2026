@@ -1,0 +1,61 @@
+int number1;
+int number2;
+string choice;
+bool inLoop = true;
+
+while(inLoop == true){
+    cout << "Please pick and operation type. addition, subtraction, multiplication, or division. type exit to exit";
+    cin >> choice;
+
+    if(choice == "addition"){
+        cout << "Please output number1";
+        cin >> number1;
+        cout << "Please output number2";
+        cin >> number2;
+
+        cout << number1 + number2;
+    }
+
+    else if(choice == "subtraction"){
+        cout << "Please output number1";
+        cin >> number1;
+        cout << "Please output number2";
+        cin >> number2;
+
+        cout << number1 - number2;
+    }
+
+    else if(choice == "multiplication"){
+        cout << "Please output number1";
+        cin >> number1;
+        cout << "Please output number2";
+        cin >> number2;
+
+        cout << number1 * number2;
+    }
+
+    else if(choice == "division"){
+        cout << "Please output number1";
+        cin >> number1;
+        cout << "Please output number2";
+        cin >> number2;
+
+        if(number2 != 0){
+            cout << number1 / number2;
+        }
+        else{
+            cout << "Division by 0 error please try again!";
+        }
+    }
+
+    else if(choice == "exit"){
+        inLoop = false;
+    }
+
+    else{
+        cout << "please enter a valid response";
+    }
+
+}
+
+cout << "thanks have a nice day!";

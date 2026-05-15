@@ -20,7 +20,7 @@ enum TokenType{
 
     //Others
     NUMBER, STRING, PRINT, OUTPUT, CIN, INPUT, IF,
-    ELSE, ENDFILE
+    ELSE, WHILE, ENDFILE
 };
 
 class Token{

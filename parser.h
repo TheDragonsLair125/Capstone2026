@@ -66,6 +66,12 @@ class Parser {
         if(match({ELSE})){
             throw runtime_error("Expected a statement");
         }
+        if(match({LEFT_BRACE})){
+            throw runtime_error("Expected a statement");
+        }
+        if(match({WHILE})){
+            return whileStatement();
+        }
 
         return expressionStatement();
     }
@@ -159,6 +165,19 @@ class Parser {
         }
         
         return new ExprStmt(expr);
+    }
+
+    Stmt* whileStatement(){
+        if(!match({LEFT_PAREN})){
+            throw runtime_error("Expected '(' after if.");
+        }
+        Expr* condition = expression();
+        if(!match({RIGHT_PAREN})){
+            throw runtime_error("Expected ')' after condition.");
+        }
+        Stmt* body = bodyStatement();
+
+        return new WhileStmt(condition, body);
     }
 
     Expr* expression(){

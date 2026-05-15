@@ -122,6 +122,7 @@ class VarStmt;
 class InputStmt;
 class IfStmt;
 class BlockStmt;
+class WhileStmt;
 
 class StmtVisitor{
 public:
@@ -133,6 +134,7 @@ public:
     virtual void visitInputStmt(InputStmt* stmt) = 0;
     virtual void visitIfStmt(IfStmt* stmt) = 0;
     virtual void visitBlockStmt(BlockStmt* stmt) = 0;
+    virtual void visitWhileStmt(WhileStmt* stmt) = 0;
 };
 
 class Stmt{
@@ -216,6 +218,19 @@ public:
 
     void accept(StmtVisitor* visitor){
         return visitor->visitBlockStmt(this);
+    }
+};
+
+class WhileStmt : public Stmt{
+public:
+    Expr* condition;
+    Stmt* body;
+
+    WhileStmt(Expr* condition, Stmt* body)
+    :condition(condition), body(body){}
+
+    void accept(StmtVisitor* visitor){
+        return visitor->visitWhileStmt(this);
     }
 };
 
@@ -513,6 +528,12 @@ public:
     void executeBlock(vector<Stmt*> statements){
         for(Stmt* statement: statements){
             execute(statement);
+        }
+    }
+
+    void visitWhileStmt(WhileStmt* stmt) override{
+        while (isTrue(evaluate(stmt->condition))){
+            execute(stmt->body);
         }
     }
 
