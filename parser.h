@@ -1,6 +1,6 @@
 #ifndef PARSER_H_INCLUDED
 #define PARSER_H_INCLUDED
-//parser.h
+//parser.h does the parsing of the tokens based on user input
 
 #include "token.h"
 #include <vector>
@@ -12,11 +12,13 @@ using namespace std;
 
 class Parser {
     private:
+    //variables current used to track location in vector
      vector<Token> tokens;
      int current = 0;
 
+    //highest precedent of the AST with variable decleration
     Stmt* declaration(){
-        
+        //Checks variable type before creating one of the correct value
             if(match({INT})){
                 return varDecleration(NUMBER_VAL);
             }
@@ -33,26 +35,32 @@ class Parser {
         
     }
 
+    //variabkle decleration
     Stmt* varDecleration(ValueType declaredType){
+        //makes sure variable is created propery
         if(peek().type != VAR){
-            throw runtime_error("Expected name after declaration");
+            throw runtime_error("Expected name after declaration, at line" + tokens[current].line);
         }
 
         Token name = advance();
         Expr* initial = nullptr;
 
+        //checks to see if variable starts inialized or not
         if(match({EQUALS})){
         initial = expression();
         }
             
+        //makes sure statement follows grammer and ends with ;
         if(!match({SEMICOLON})){
-                    throw runtime_error("Expected ';' after expression.");
+                    throw runtime_error("Expected ';' after expression, at line" + tokens[current].line);
         }
 
+        //creates new VarStmt object with right info
         return new VarStmt(name, declaredType, initial);
 
     }
 
+    //
     Stmt* statement(){
         if(match({PRINT})){
             return printStatement();

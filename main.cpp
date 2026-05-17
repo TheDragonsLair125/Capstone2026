@@ -67,7 +67,9 @@ vector<Token> Tokenizer(string filename){
         //loop to read file char by char till end
         while( textfile.get(tempChar)){
             
+            //checkks if is in comment if does ignores all characters as its a comment
             if(inComment == false){
+                //checks to see if is in a string if so ignores except adding to one giant token
                 if(inString == false){
                 //switch case to every special character that start would mean is a new token
                     switch(tempChar){
@@ -102,11 +104,12 @@ vector<Token> Tokenizer(string filename){
                         tokens.push_back(Token(TokenType::MULTIPLY, "*", line));
                         break;
 
-                    //come back to this later for double
+                    //multiple statements as could be divide or comment
                     case '/':{
                         Cleaner(tempToken, tokens, line);
                         char nextChar = textfile.peek();
 
+                        // if is comment set up makes sure its in comment next char is used to peek ahead since character by character same logic used for all characters that could be double
                         if(nextChar == '/'){
                             textfile.get(nextChar);
                             inComment = true;
@@ -116,7 +119,7 @@ vector<Token> Tokenizer(string filename){
                         }
                         break;
                     }
-                    //come back to this later for double
+                    
                     case '=':{
                         Cleaner(tempToken, tokens, line);
 
@@ -196,6 +199,7 @@ vector<Token> Tokenizer(string filename){
                     }
            
                     case '"':
+                    //sets to being in a string as strings basically ignore all stuff inside except for what character it is
                         Cleaner(tempToken, tokens, line);
                         inString = true;
                         break;
@@ -223,6 +227,7 @@ vector<Token> Tokenizer(string filename){
                     }
                 }
                 else{
+                    //if gets a new " while in string ends string as new token otherwise adds the character to a string
                     if(tempChar == '"'){
                         tokens.push_back(Token(TokenType::STRING, tempToken, line));
                         inString = false;
@@ -235,6 +240,7 @@ vector<Token> Tokenizer(string filename){
                 }
             }
             else{
+                //ends comment once on new line
                 if(tempChar == '\n'){
                     line++;
                     inComment = false;
@@ -266,8 +272,10 @@ void Cleaner(string& tempToken, vector<Token>& tokens, int line){
     //checks if token is empty if not pushes onto stack
     bool hasChar = false;
 
+    //makes sure token isnt empty preventing ghost tokens
     if(!tempToken.empty()){
             
+            //checks to see if token is only numbers if so assigns it as number otherwise is something else
             for(int i = 0; i < tempToken.length(); i++){
                 if(!isdigit(tempToken[i]) && tempToken[i] != '.'){
                     hasChar = true;
@@ -275,6 +283,7 @@ void Cleaner(string& tempToken, vector<Token>& tokens, int line){
             }
 
             if(hasChar == true){
+                //ifs for every special token there can be otjerwise makes token a variabe name
                 if(tempToken == "int"){
                     tokens.push_back(Token(TokenType::INT, tempToken, line));
                 }

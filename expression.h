@@ -1,7 +1,7 @@
-//AST Definitions
+//AST Definitions along with the interpeter for the project
 #ifndef EXPR_H_INCLUDED
 #define EXPR_H_INCLUDED
-
+//includes
 #include <string>
 #include <fstream>
 #include "token.h"
@@ -10,6 +10,7 @@
 
 using namespace std;
 
+//classes declared up here for visitor function
 class Math;
 class Value;
 class Var;
@@ -17,10 +18,15 @@ class Assign;
 class Group;
 class Unary;
 
+///////////////////////////////////////////////////////////////////////////////
+// Expression AST/Class definitions
+///////////////////////////////////////////////////////////////////////////////
+//visitor functiona as this program implements Visitor pattern to allow for easier scaling of the project overtime
 class ExprVisitor {
 public:
     virtual ~ExprVisitor() = default;
 
+    //set up for visitor functions
     virtual RuntimeVal visitMath(Math* expr) = 0;
     virtual RuntimeVal visitValue(Value* expr) = 0;
     virtual RuntimeVal visitVar(Var* expr) = 0;
@@ -29,6 +35,7 @@ public:
     virtual RuntimeVal visitUnary(Unary* expr) = 0;
 };
 
+//base class for expressions
 class Expr{
 public:
     virtual ~Expr() = default;
@@ -36,6 +43,7 @@ public:
     virtual RuntimeVal accept(ExprVisitor* visitor) = 0;
 };
 
+//Ast for math functions expression opertaion expression | value
 class Math : public Expr{
 public:
     Expr* left;
@@ -51,6 +59,7 @@ public:
 
 };
 
+//AST for value functions Number | String | "True" | "False"
 class Value : public Expr{
 public:
     Token value;
@@ -64,6 +73,7 @@ public:
 
 };
 
+//AST for variables VARIABLE  variable
 class Var : public Expr{
 public:
     Token var;
@@ -77,6 +87,7 @@ public:
 
 };
 
+//AST for variable assignment variable = expression
 class Assign : public Expr{
 public:
     Token name;
@@ -90,6 +101,7 @@ public:
     }
 };
 
+//AST for parantheses "("  expression  ")"
 class Group : public Expr{
 public:
     Expr* expr;
@@ -103,6 +115,7 @@ public:
 
 };
 
+//Unary expression AST "-" expression | "!" expression
 class Unary : public Expr{
 public:
     Token oper;
@@ -116,6 +129,10 @@ public:
     }
 };
 
+///////////////////////////////////////////////////////////////////////////////
+// Statements AST/Class definitions
+///////////////////////////////////////////////////////////////////////////////
+
 class ExprStmt;
 class PrintStmt;
 class VarStmt;
@@ -124,6 +141,7 @@ class IfStmt;
 class BlockStmt;
 class WhileStmt;
 
+//visitor function for statments
 class StmtVisitor{
 public:
     virtual ~StmtVisitor() = default;
@@ -137,6 +155,7 @@ public:
     virtual void visitWhileStmt(WhileStmt* stmt) = 0;
 };
 
+//statement base class
 class Stmt{
 public:
     virtual ~Stmt() = default;
@@ -144,6 +163,7 @@ public:
     virtual void accept(StmtVisitor* visitor) = 0;
 };
 
+//expression statement  ast expression program | expression
 class ExprStmt : public Stmt{
 public:
     Expr* expr;
@@ -156,6 +176,7 @@ public:
     }
 };
 
+//print statement ast cout << expression
 class PrintStmt : public Stmt{
 public:
     Expr* expr;
@@ -168,6 +189,7 @@ public:
     }
 };
 
+//input statement ast cin >> variable
 class InputStmt: public Stmt{
 public:
     Token name;
@@ -180,6 +202,7 @@ public:
     }
 };
 
+//input statement ast variable decleration type variable = expression | type variable
 class VarStmt : public Stmt{
 public:
     Token name;
@@ -195,6 +218,7 @@ public:
 
 };
 
+//if statement ast if(expression) block if | if(expression) block
 class IfStmt : public Stmt{
 public:
     Expr* condition;
@@ -209,6 +233,7 @@ public:
     }
 };
 
+//block statement ast "{" statement "}"
 class BlockStmt : public Stmt{
 public:
     vector<Stmt*> statements;
@@ -221,6 +246,7 @@ public:
     }
 };
 
+//while statemetn ast "while (" expression ")" block
 class WhileStmt : public Stmt{
 public:
     Expr* condition;
@@ -234,8 +260,12 @@ public:
     }
 };
 
+///////////////////////////////////////////////////////////////////////////////
+// Interpeter: Interpets AST into actual runeable code
+///////////////////////////////////////////////////////////////////////////////
 class Interpeter : public ExprVisitor, public StmtVisitor{
-private:
+private: 
+    //helper functions
     RuntimeVal evaluate(Expr* expr){
         return expr->accept(this);
     }
@@ -244,10 +274,15 @@ private:
         return stmt->accept(this);
     }
 
+    //output enviroment decleration
     std::ofstream outputFile;
     MemoryMap memory;
 
 public:
+///////////////////////////////////////////////////////////////////////////////
+// Interpeter code for expressions
+///////////////////////////////////////////////////////////////////////////////
+    //visit function for value, creates RuntimeVal object of appropiate type based on token indentifier
     RuntimeVal visitValue(Value* expr) override{
         RuntimeVal tempVal;
 
@@ -261,6 +296,7 @@ public:
             tempVal.stringVal = expr->value.value;
         }
 
+        //both set for bool val  cause true and false
         else if(expr->value.type == TRUE){
             tempVal.type = BOOL_VAL;
             tempVal.boolVal = true;
@@ -274,13 +310,16 @@ public:
         return tempVal;
     }
 
+    //visit function for Math
     RuntimeVal visitMath(Math* expr) override{
+        //gets left expresion and  right expression to evaluate before math
         RuntimeVal left = evaluate(expr->left);
         RuntimeVal right = evaluate(expr->right);
 
         RuntimeVal result;
         result.type = NUMBER_VAL;
 
+        //switch for each type of operation
         switch (expr->oper.type) {
             case MINUS:
                 result.numberVal = left.numberVal - right.numberVal;
@@ -343,6 +382,7 @@ public:
                 break;
 
             case EQUAL_TO:
+            //checks to make sure type of comparison is same to prevent comparison mismatch
                 result.type = BOOL_VAL;
                 if(left.type == NUMBER_VAL && right.type == NUMBER_VAL){
                     result.boolVal = left.numberVal == right.numberVal;
@@ -363,6 +403,7 @@ public:
                 break;
             
             case NOT_EQUAL_TO:
+            //checks to make sure type of comparison is same to prevent comparison mismatch
                 result.type = BOOL_VAL;
                 if(left.type == NUMBER_VAL && right.type == NUMBER_VAL){
                     result.boolVal = left.numberVal != right.numberVal;
@@ -383,16 +424,19 @@ public:
                 break;
 
             default:
-                return RuntimeVal(); // nil
+            //default to return for NULL / just in case
+                return RuntimeVal(); // null
                 break;
         }
 
     }
     
+    //gets variable from memory map
     RuntimeVal visitVar(Var* expr) override{
         return memory.get(expr->var);
     }
 
+    //assigns variables by using the assign function
     RuntimeVal visitAssign(Assign* expr) override{
         RuntimeVal value = evaluate(expr->value);
 
@@ -401,14 +445,17 @@ public:
         return value;
     }
 
+    //visit for parenthesis
     RuntimeVal visitGroup(Group* expr) override{
         return evaluate(expr->expr);
     }
 
+    //visit function for unary 
     RuntimeVal visitUnary(Unary* expr) override{
         RuntimeVal right = evaluate(expr->right);
 
         switch(expr->oper.type){
+            //if minus takes value and makes it negative if valid target
             case MINUS:{
                 if(right.type != NUMBER_VAL){
                     throw runtime_error("Operand must be number at line: " + std::to_string(expr->oper.line));
@@ -421,6 +468,7 @@ public:
                 break;
             }
 
+            //gets reverse true / false from current expression
             case NOT:{
                 RuntimeVal result;
                 result.type = BOOL_VAL;
@@ -434,8 +482,10 @@ public:
         return RuntimeVal();
     }
 
-    bool isTrue(RuntimeVal value){
+    //checks if value is true or false helper for above
+        bool isTrue(RuntimeVal value){
 
+            //like c++ null defaults to false
         if(value.type == NULL_VAL){
             return false;
         }
@@ -446,25 +496,35 @@ public:
 
         return true;
     }
+///////////////////////////////////////////////////////////////////////////////
+// Interpeter for statements
+///////////////////////////////////////////////////////////////////////////////
 
+    //visitor for expression statement
     void visitExprStmt(ExprStmt* stmt) override{
         RuntimeVal value = evaluate(stmt->expr);
+        //goes to custom to string function for demo / debug reasons
         cout << toString(value) << endl;
 
         return;
     }
 
+    //visitor for print statements
     void visitPrintStmt(PrintStmt* stmt) override{
         RuntimeVal value = evaluate(stmt->expr);
         cout << toString(value) << endl;
+        //outputs to text file to seperate output to normal text
         outputFile << toString(value) << endl;
 
         return;
     }
 
+    //visitor for inputs
     void visitInputStmt(InputStmt* stmt) override{
+        //gets proper variable information
         Variable variable = memory.getVariable(stmt->name);
 
+        //sees what type of variable is gotten to get input for proper memory management
         if(variable.declaredType == NUMBER_VAL){
 
             double input;
@@ -490,10 +550,12 @@ public:
         }
     }
 
+    //variable creation visitor
     void visitVarStmt(VarStmt* stmt) override{
         Variable variable;
         variable.declaredType = stmt->declaredType;
 
+        //checks if variable should have value or be null on creation
         if(stmt->expr != nullptr){
             variable.value = evaluate(stmt->expr);
 
@@ -506,14 +568,18 @@ public:
             variable.value = RuntimeVal();
         }
 
+        //once variable creation value decided creates in memory
         memory.define(stmt->name.value, variable);
     }
 
+    //visitor for if statements
     void visitIfStmt(IfStmt* stmt) override{
+        //makes sure chosen condition is true before executing
         if(isTrue(evaluate(stmt->condition))){
             execute(stmt->ifCode);
         }
         
+        //sees if there is an else or else if if not doesnt run so can have only ifs
         else if(stmt->elseCode != nullptr){
             execute(stmt->elseCode);
         }
@@ -521,22 +587,29 @@ public:
         return;
     }
 
+    //visit statement for blocks was two functions in case could get local memory set up
     void visitBlockStmt(BlockStmt* stmt) override{
         executeBlock(stmt->statements);
     }
 
     void executeBlock(vector<Stmt*> statements){
+        //does for to make sure every statement in block runs
         for(Stmt* statement: statements){
             execute(statement);
         }
     }
 
     void visitWhileStmt(WhileStmt* stmt) override{
+        //runs code inside while conditon is true
         while (isTrue(evaluate(stmt->condition))){
             execute(stmt->body);
         }
     }
 
+///////////////////////////////////////////////////////////////////////////////
+// Interpeter meta functions
+///////////////////////////////////////////////////////////////////////////////
+//trys to interpet otherwise exports the error
     void interpret(Stmt* stmt){
         try{
             execute(stmt);
@@ -546,6 +619,7 @@ public:
         }
     }
 
+    //turns current data into a string for output based on its value type
     string toString(RuntimeVal value){
         if (value.type == NULL_VAL){
             return "null";
@@ -587,10 +661,12 @@ public:
         return "uhh oh something went wrong interpeter side\n"; 
     }
     
+    //creates file on startup
     Interpeter(){
         outputFile.open("output.txt");
     }
 
+    //closes file on program end
     ~Interpeter(){
         outputFile.close();
     }
