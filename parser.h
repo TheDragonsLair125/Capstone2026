@@ -52,7 +52,7 @@ class Parser {
             
         //makes sure statement follows grammer and ends with ;
         if(!match({SEMICOLON})){
-                    throw runtime_error("Expected ';' after expression, at line" + tokens[current].line);
+                    throw runtime_error("Expected ';' after expression, at line" + tokens[current-1].line);
         }
 
         //creates new VarStmt object with right info
@@ -60,8 +60,9 @@ class Parser {
 
     }
 
-    //
+    //Checks what type of token is used to see what type of statement to run
     Stmt* statement(){
+
         if(match({PRINT})){
             return printStatement();
         }
@@ -71,11 +72,13 @@ class Parser {
         if(match({IF})){
             return IfStatement();
         }
+        //next two prevent errors as in C++ you cant have an else statement by itself or block of code without an error.
         if(match({ELSE})){
-            throw runtime_error("Expected a statement");
+            throw runtime_error("Expected a statement, at line" + tokens[current].line);
         }
+        
         if(match({LEFT_BRACE})){
-            throw runtime_error("Expected a statement");
+            throw runtime_error("Expected a statement, at line" + tokens[current].line);
         }
         if(match({WHILE})){
             return whileStatement();
@@ -84,46 +87,51 @@ class Parser {
         return expressionStatement();
     }
 
+    //Print statements
     Stmt* printStatement(){
 
+        //done to make sure proper format is done
         if(!match({OUTPUT})){
-                    throw runtime_error("Expected '<<' after cout.");
+                    throw runtime_error("Expected '<<' after cout, at line" + tokens[current].line);
         }
 
         Expr* expr = expression();
 
         if(!match({SEMICOLON})){
-                    throw runtime_error("Expected ';' after expression.");
+                    throw runtime_error("Expected ';' after expression, at line" + tokens[current-1].line);
         }
 
         return new PrintStmt(expr);
     }
 
+    //input statements
     Stmt* InputStatement(){
         if(!match({INPUT})){
-                    throw std::runtime_error("Expected '>>' after cin.");
+                    throw std::runtime_error("Expected '>>' after cin, at line" + tokens[current].line);
         }
 
+        //makes sure a variable is there as that is where input is stored
         if(!match({VAR})){
-                    throw std::runtime_error("Expected variable after >>.");
+                    throw std::runtime_error("Expected variable after >>, at line" + tokens[current].line);
         }
 
         Token name = previous();
 
         if(!match({SEMICOLON})){
-                    throw std::runtime_error("Expected ';' after expression.");
+                    throw std::runtime_error("Expected ';' after expression, at line" + tokens[current-1].line);
         }
 
         return new InputStmt(name);
     }
 
+    //If statements
     Stmt* IfStatement(){
         if(!match({LEFT_PAREN})){
-            throw runtime_error("Expected '(' after if.");
+            throw runtime_error("Expected '(' after if, at line" + tokens[current].line);
         }
         Expr* condition = expression();
         if(!match({RIGHT_PAREN})){
-            throw runtime_error("Expected ')' after condition.");
+            throw runtime_error("Expected ')' after condition, at line" + tokens[current].line);
         }
 
         Stmt* ifCode = bodyStatement();
@@ -155,7 +163,7 @@ class Parser {
         
         while(!check(RIGHT_BRACE)){
             if(isAtEnd()){
-                throw runtime_error("Expected '}'.");
+                throw runtime_error("Expected '}', at line" + tokens[current].line);
             }
             statements.push_back(declaration());
         }
@@ -169,7 +177,7 @@ class Parser {
         Expr* expr = expression();
 
         if(!match({SEMICOLON})){
-                    throw runtime_error("Expected ';' after expression.");
+                    throw runtime_error("Expected ';' after expression, at line" + tokens[current].line);
         }
         
         return new ExprStmt(expr);
@@ -177,11 +185,11 @@ class Parser {
 
     Stmt* whileStatement(){
         if(!match({LEFT_PAREN})){
-            throw runtime_error("Expected '(' after if.");
+            throw runtime_error("Expected '(' after if, at line" + tokens[current].line);
         }
         Expr* condition = expression();
         if(!match({RIGHT_PAREN})){
-            throw runtime_error("Expected ')' after condition.");
+            throw runtime_error("Expected ')' after condition, at line" + tokens[current].line);
         }
         Stmt* body = bodyStatement();
 
@@ -204,7 +212,7 @@ class Parser {
                 return new Assign(name, value);
             }
 
-            throw runtime_error("Invalid assignment target.");
+            throw runtime_error("Invalid assignment target, at line" + tokens[current].line);
         }
 
         return expr;
@@ -285,12 +293,12 @@ class Parser {
             Expr* expr = expression();
 
             if(!match({RIGHT_PAREN})){
-                    throw runtime_error("Expected ';' after expression.");
+                    throw runtime_error("Expected ';' after expression, at line" + tokens[current-1].line);
             }
 
             return new Group(expr);
         }
-        throw runtime_error("Expected Value.");
+        throw runtime_error("Expected Value, at line" + tokens[current].line);
     }
 
     bool match(initializer_list<TokenType> types){
